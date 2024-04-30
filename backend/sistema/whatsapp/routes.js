@@ -13,6 +13,9 @@ const {setInstanceWebSocket} = require('./functions/setInstanceWebSocket')
 const CONNECTION_SOCKET_URL = (process.env.PROD_ENV==='TRUE')?(`wss://${process.env.WPPAPI_PROXY}`):(`ws://localhost:${process.env.WPPAPI_PORT}`);
 const connection_socket = require("socket.io-client");
 var store = require('store');
+var Mutex = require('async-mutex').Mutex;
+const mutex = new Mutex();
+
 
 whatsapp_router.get('/user_cache',async(req,res)=>{
     const user_name = req.user_name;
@@ -75,6 +78,7 @@ whatsapp_router.get('/get_how_many', async(req,res)=>{
 whatsapp_router.post('/disparo', async (req,res)=>{
     console.log('DISPARO TRIGADO')
     try{
+        const release = await mutex.acquire();
         const token = req.token;
         const user_name = req.user_name;
         const {disparo_type} = req.body;
@@ -91,13 +95,13 @@ whatsapp_router.post('/disparo', async (req,res)=>{
         var {campaigns_to_exclude} = req.body;
         var {file_type} = req.body;
 
-
         var {interval_lower_bound, interval_upper_bound,number_to_trigger_pseudo_pause,pseudo_pause_lower_limit,pseudo_pause_upper_limit} = req.body;
         console.log('Configurações intervalares:')
         console.log([interval_lower_bound, interval_upper_bound,number_to_trigger_pseudo_pause,pseudo_pause_lower_limit,pseudo_pause_upper_limit]);
         if(!(pseudo_pause_upper_limit && pseudo_pause_lower_limit && number_to_trigger_pseudo_pause && interval_upper_bound && interval_lower_bound && disparo_type && connection_name && user_name  && message && campaign_name && ((disparo_type==='lista')?unfilter_how_many_to_disparo:true) && campaigns_to_exclude)){
-            console.log('Algo nao passou')
+            console.log('Algo nao passou');
             res.status(400).end();
+            release();
             return;
         }
 
@@ -130,9 +134,11 @@ whatsapp_router.post('/disparo', async (req,res)=>{
         console.log('DISPARO PRESTES A SER TRIGADO')
         doDisparoWhatsapp(file_type,disparo_type, contacts,user_name, connection_name, campaign_name, message, image_base64, campaigns_to_exclude, parseInt(unfilter_how_many_to_disparo),parseInt(interval_lower_bound), parseInt(interval_upper_bound),parseInt(number_to_trigger_pseudo_pause),parseInt(pseudo_pause_lower_limit),parseInt(pseudo_pause_upper_limit), token);
         res.status(200).end();
+        release();
     }catch(error){
         console.log(error);
         res.status(500).end();
+        release();
     }
 })
 

@@ -1,8 +1,12 @@
 require('dotenv').config();
 const fetch = require('node-fetch');
 const WPPAPI_URL = (process.env.PROD_ENV==='TRUE')?(`https://${process.env.WPPAPI_PROXY}`):(`http://localhost:${process.env.WPPAPI_PORT}`)
+var Mutex = require('async-mutex').Mutex;
+const mutex = new Mutex();
 
 const sendMessage = async(file_type,connection_name, user_name,target_phone,message, image_base64)=>{
+    const release = await mutex.acquire();
+
     console.log(user_name)
     console.log(connection_name)
     console.log(target_phone)
@@ -32,11 +36,13 @@ const sendMessage = async(file_type,connection_name, user_name,target_phone,mess
           method: 'POST',
           headers: headers0,
           body: JSON.stringify(parameters)
-        })
+        });
 
         if (response.status===400) {
           // Check if the response status is not within the 200-299 range
           throw new Error(`HTTP error! Status: ${response.status}`);
+        }else{
+          release();
         }
   
         console.log(await response.json())
@@ -53,11 +59,13 @@ const sendMessage = async(file_type,connection_name, user_name,target_phone,mess
             method: 'POST',
             headers: headers0,
             body: JSON.stringify(parameters)
-          })
+          });
 
           if (response.status===400) {
             // Check if the response status is not within the 200-299 range
             throw new Error(`HTTP error! Status: ${response.status}`);
+          }else{
+            release();
           }
   
           console.log(await response.json())
@@ -66,6 +74,7 @@ const sendMessage = async(file_type,connection_name, user_name,target_phone,mess
       }
       return true
     } catch(error){//verificar problema do 9 na frente
+        release();
         console.log('CAIU NO CATCH')
         console.log('com whatsanet')
         console.log(target_phone)
