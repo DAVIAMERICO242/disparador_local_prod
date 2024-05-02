@@ -145,7 +145,7 @@ const NumbersFromExcludedCampaigns = async (user_name, campaigns_to_exclude) => 
             database: process.env.DATABASE_NAME
         });
 
-        const query = `SELECT DISTINCT target_number FROM disparos WHERE user=? AND campaign IN (?) AND campaign!=ignore`;
+        const query = `SELECT DISTINCT target_number FROM disparos WHERE user=? AND campaign IN (?) AND campaign!='ignore'`;
         const values = [user_name, campaigns_to_exclude];
         const blocked_numbers = [];
 
