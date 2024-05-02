@@ -38,6 +38,7 @@ import { waMonitor } from '../server.module';
 import { Events, wa } from '../types/wa.types';
 import { CacheService } from './cache.service';
 
+
 export class ChannelStartupService {
   constructor(
     public readonly configService: ConfigService,

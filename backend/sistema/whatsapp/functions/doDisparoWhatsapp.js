@@ -256,7 +256,7 @@ const doDisparoWhatsapp = async (file_type,disparo_type,contacts,user_name, conn
               await sleep(1000*randomBetween(pseudo_pause_lower_limit,pseudo_pause_upper_limit));
             }
             try{
-              await recordCampaignOnSentMessage(user_name,connection_name, campaign_name, unique_contacts[index].nome || 'desconhecido', unique_contacts[index].phone);
+              await recordCampaignOnSentMessage(user_name,connection_name, campaign_name, unique_contacts[index].nome || 'desconhecido', unique_contacts[index].phone, message, "disp_for_loop");
             }catch(error){
               console.log(error)
             }

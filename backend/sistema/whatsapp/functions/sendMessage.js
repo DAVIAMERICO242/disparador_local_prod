@@ -1,6 +1,7 @@
 require('dotenv').config();
 const fetch = require('node-fetch');
 const WPPAPI_URL = (process.env.PROD_ENV==='TRUE')?(`https://${process.env.WPPAPI_PROXY}`):(`http://localhost:${process.env.WPPAPI_PORT}`)
+const {recordCampaignOnSentMessage} = require('../../campaigns/manage_database_campaigns');
 var Mutex = require('async-mutex').Mutex;
 const mutex = new Mutex();
 
@@ -43,6 +44,7 @@ const sendMessage = async(file_type,connection_name, user_name,target_phone,mess
           throw new Error(`HTTP error! Status: ${response.status}`);
         }else{
           release();
+          recordCampaignOnSentMessage(user_name,connection_name, "ignore", "ignore", target_phone, message ,"inner_sendMessage_disp");
         }
   
         console.log(await response.json())
@@ -66,6 +68,7 @@ const sendMessage = async(file_type,connection_name, user_name,target_phone,mess
             throw new Error(`HTTP error! Status: ${response.status}`);
           }else{
             release();
+            recordCampaignOnSentMessage(user_name,connection_name, "ignore", "ignore", target_phone, message ,"inner_sendMessage_disp");
           }
   
           console.log(await response.json())
@@ -74,7 +77,6 @@ const sendMessage = async(file_type,connection_name, user_name,target_phone,mess
       }
       return true
     } catch(error){//verificar problema do 9 na frente
-        release();
         console.log('CAIU NO CATCH')
         console.log('com whatsanet')
         console.log(target_phone)
@@ -101,10 +103,14 @@ const sendMessage = async(file_type,connection_name, user_name,target_phone,mess
             console.log('ERRO AO TENTAR NOVAMENTE')
             // Check if the response status is not within the 200-299 range
             throw new Error(`HTTP error! Status: ${last_attempt.status}`);
+          }else{
+            release();
+            recordCampaignOnSentMessage(user_name,connection_name, "ignore", "ignore", target_phone, message ,"inner_sendMessage_disp");
           }
 
           return true;
         }catch(error){
+          release();
           console.log(error)
           return false
         }

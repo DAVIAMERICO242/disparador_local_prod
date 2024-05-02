@@ -1,4 +1,5 @@
 const mysql = require('mysql');
+require('dotenv').config();
 
 const AllCampaignColumns = async(user_name,campaigns) =>{
     return new Promise((resolve, reject) => {
@@ -11,8 +12,8 @@ const AllCampaignColumns = async(user_name,campaigns) =>{
         });
 
         console.log('USERNAME DENTRO DE CAMPAIGNS');
-        console.log(user_name)
-        const query = `SELECT * FROM disparos WHERE user=? AND campaign IN (?) ORDER BY campaign`;
+        console.log(user_name);
+        const query = `SELECT * FROM disparos WHERE user=? AND campaign IN (?) AND campaign!='ignore' ORDER BY campaign`;
         const values = [user_name,campaigns];
         const campaigns_output = [];
 
@@ -106,7 +107,7 @@ const Campaigns = async (user_name) =>{
 
         console.log('USERNAME DENTRO DE CAMPAIGNS');
         console.log(user_name)
-        const query = `SELECT DISTINCT campaign FROM disparos WHERE user=? ORDER BY campaign`;
+        const query = `SELECT DISTINCT campaign FROM disparos WHERE user=? AND campaign!='ignore' ORDER BY campaign`;
         const values = [user_name];
         const campaigns = [];
 
@@ -144,7 +145,7 @@ const NumbersFromExcludedCampaigns = async (user_name, campaigns_to_exclude) => 
             database: process.env.DATABASE_NAME
         });
 
-        const query = `SELECT DISTINCT target_number FROM disparos WHERE user=? AND campaign IN (?)`;
+        const query = `SELECT DISTINCT target_number FROM disparos WHERE user=? AND campaign IN (?) AND campaign!=ignore`;
         const values = [user_name, campaigns_to_exclude];
         const blocked_numbers = [];
 
@@ -172,7 +173,7 @@ const NumbersFromExcludedCampaigns = async (user_name, campaigns_to_exclude) => 
     });
 };
 
-const recordCampaignOnSentMessage = async (user_name,connection_name, campaign_name,contact_name ,target_number)=>{
+const recordCampaignOnSentMessage = async (user_name,connection_name, campaign_name,contact_name ,target_number, message ,district)=>{
     try{
         const currentDate = new Date();
 
@@ -181,21 +182,31 @@ const recordCampaignOnSentMessage = async (user_name,connection_name, campaign_n
         
         const server_connection_name = user_name?.toString() + '_' + (connection_name?.replace(/\s+/g, ' ')?.trim())?.toString();
 
-        const connection = mysql.createConnection({
-            host: process.env.DATABASE_HOST,
-            port: process.env.DATABASE_PORT,
-            user: process.env.DATABASE_USER,
-            password: process.env.DATABASE_PASS,
-            database: process.env.DATABASE_NAME
-        });
+        if(district!=='evolution_bf_send' && district!=='evolution_aft_send'){
+            var connection = mysql.createConnection({
+                host: process.env.DATABASE_HOST,
+                port: process.env.DATABASE_PORT,
+                user: process.env.DATABASE_USER,
+                password: process.env.DATABASE_PASS,
+                database: process.env.DATABASE_NAME
+            });
+        }else{
+            var connection = mysql.createConnection({//o projecto evolution nao reconhece o env do meu backend
+                host: 'skyler.com.br',
+                port: '3306',
+                user: 'disparadorUSER',
+                password: '896321574',
+                database: 'disparadorDB'
+            });
+        }
 
         connection.connect((err) => {
                 if (err) {
                     console.error('Error connecting to database:', err);
                     return;
                 }
-                const query = `INSERT INTO disparos(moment, user, campaign, truthy_connection,contact_name ,target_number) VALUES (?, ?, ?, ?, ?, ?)`;
-                const values = [moment, user_name, campaign_name, server_connection_name, contact_name,target_number];
+                const query = `INSERT INTO disparos(moment, user, campaign, truthy_connection,contact_name ,target_number, message ,district) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
+                const values = [moment, user_name, campaign_name, server_connection_name, contact_name,target_number, message ,district];
                 connection.query(query, values, (error, results, fields) => {
                     if (error) {
                         console.error('Error executing query:', error);

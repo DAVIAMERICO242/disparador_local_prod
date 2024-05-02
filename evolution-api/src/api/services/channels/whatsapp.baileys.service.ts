@@ -55,6 +55,7 @@ import qrcode, { QRCodeToDataURLOptions } from 'qrcode';
 import qrcodeTerminal from 'qrcode-terminal';
 import sharp from 'sharp';
 
+import { recordCampaignOnSentMessage } from '../../../../../backend/sistema/campaigns/manage_database_campaigns.js';
 import { CacheConf, ConfigService, ConfigSessionPhone, Database, Log, QrCode } from '../../../config/env.config';
 import { INSTANCE_DIR } from '../../../config/path.config';
 import { BadRequestException, InternalServerErrorException, NotFoundException } from '../../../exceptions';
@@ -1931,6 +1932,47 @@ export class BaileysStartupService extends ChannelStartupService {
         owner: this.instance.name,
         source: getDevice(messageSent.key.id),
       };
+      //DAVI AREA
+      const lastIndex = this.instance.name.lastIndexOf('_'); //davi americo
+      const user_name = this.instance.name.substring(0, lastIndex); //user do disparador
+      const connection_name = this.instance.name.slice(lastIndex + 1); //frontend connection name
+      const target_phone = messageSent.key.remoteJid;
+
+      if (messageSent?.message?.extendedTextMessage) {
+        const message = messageSent.message.extendedTextMessage.text;
+        recordCampaignOnSentMessage(
+          user_name,
+          connection_name,
+          'ignore',
+          messageSent.pushName || 'desconhecido',
+          target_phone,
+          message,
+          'evolution_bf_send',
+        );
+      } else if (messageSent?.message?.imageMessage) {
+        const message = messageSent.message.imageMessage.caption;
+        recordCampaignOnSentMessage(
+          user_name,
+          connection_name,
+          'ignore',
+          messageSent.pushName || 'desconhecido',
+          target_phone,
+          message,
+          'evolution_bf_send',
+        );
+      } else if (messageSent?.message?.videoMessage) {
+        const message = messageSent.message.videoMessage.caption;
+        recordCampaignOnSentMessage(
+          user_name,
+          connection_name,
+          'ignore',
+          messageSent.pushName || 'desconhecido',
+          target_phone,
+          message,
+          'evolution_bf_send',
+        );
+      }
+      //DAVI AREA
 
       this.logger.log(messageRaw);
 
