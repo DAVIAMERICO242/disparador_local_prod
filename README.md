@@ -17,7 +17,7 @@ nano src/env.yml alterar porta e token de cordo com o BACKEND
 
 npm run start:prod
 
-pm2 start 'npm run start:prod' --name ApiEvolution -- start --node-args="--max-old-space-size=6000" --max-memory-restart 6G
+pm2 start "npm start" --name "ApiEvolution"
 
 
 #############instalar meu Backend
