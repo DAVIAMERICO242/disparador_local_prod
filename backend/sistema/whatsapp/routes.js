@@ -76,9 +76,9 @@ whatsapp_router.get('/get_how_many', async(req,res)=>{
 })
 
 whatsapp_router.post('/disparo', async (req,res)=>{
-    console.log('DISPARO TRIGADO')
+    console.log('DISPARO TRIGADO');
+    const release = await mutex.acquire();
     try{
-        const release = await mutex.acquire();
         const token = req.token;
         const user_name = req.user_name;
         const {disparo_type} = req.body;
