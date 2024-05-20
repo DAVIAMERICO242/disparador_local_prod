@@ -55,7 +55,7 @@ import qrcode, { QRCodeToDataURLOptions } from 'qrcode';
 import qrcodeTerminal from 'qrcode-terminal';
 import sharp from 'sharp';
 
-import { recordCampaignOnSentMessage } from '../../../../../backend/sistema/campaigns/manage_database_campaigns.js';
+import { recordCampaignOnSentMessage } from '../../../../../backend/sistema/campaigns/manage_database_campaigns.ts';
 import { CacheConf, ConfigService, ConfigSessionPhone, Database, Log, QrCode } from '../../../config/env.config';
 import { INSTANCE_DIR } from '../../../config/path.config';
 import { BadRequestException, InternalServerErrorException, NotFoundException } from '../../../exceptions';
