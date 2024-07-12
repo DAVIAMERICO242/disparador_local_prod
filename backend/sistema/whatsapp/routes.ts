@@ -132,6 +132,9 @@ whatsapp_router.post('/disparo', async (req:RequestSchema,res:Response)=>{
                 if(!element.phone){
                     return false;
                 }
+                if(!element.nome){
+                    return false;
+                }
                 return{
                     'nome':element.nome,
                     'phone': formatPhoneNumber((element.phone).toString())
